@@ -1,0 +1,44 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Login Page</title>
+    <link rel="stylesheet" href="{% static 'registration\css\styles.css' %}" />
+  </head>
+  <body>
+    <div class="background">
+      <div class="shape"></div>
+      <div class="shape"></div>
+    </div>
+
+    <form action="" method="post">
+      {% csrf_token %}
+      <h3>Login Here</h3>
+
+      <label for="username">Username</label>
+      <input
+        type="text"
+        placeholder="Username"
+        id="username"
+        name="username"
+        required
+      />
+
+      <label for="password">Password</label>
+      <input
+        type="password"
+        placeholder="Password"
+        id="password"
+        name="pass"
+        required
+      />
+
+      <button type="submit">Login</button>
+
+      <p style="text-align: center; margin-top: 20px">
+        Don't have an account? <a href="{% url 'signup' %}">Signup here</a>
+      </p>
+    </form>
+  </body>
+</html>

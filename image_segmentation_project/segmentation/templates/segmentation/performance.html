@@ -1,0 +1,54 @@
+<!-- segmentation/performance.html -->
+
+{% extends 'segmentation/base.html' %}
+{% block content %}
+<div class="container">
+    <h1 class="performance-title">Performance Metrics</h1>
+    <br><br>
+    
+    {% if images_with_metrics > 0 %}
+        <div class="metrics-container">
+            <div class="metrics-summary">
+                <div class="metric-box">
+                    <h3>Total Images</h3>
+                    <p>{{ total_images }}</p>
+                </div>
+                <div class="metric-box">
+                    <h3>Processed Images</h3>
+                    <p>{{ images_with_metrics }}</p>
+                </div>
+                {% if avg_processing_time is not None %}
+                <div class="metric-box">
+                    <h3>Avg Processing Time</h3>
+                    <p>{{ avg_processing_time }}s</p>
+                </div>
+                {% endif %}
+                {% if avg_accuracy is not None %}
+                <div class="metric-box">
+                    <h3>Avg Accuracy</h3>
+                    <p>{{ avg_accuracy }}%</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <h2 class="metric-heading">Recent Processing Times</h2>
+            <div class="metrics-grid">
+                {% for image in processed_images|slice:":5" %}
+                <div class="metric-box">{{ image.processing_time|floatformat:3 }}s</div>
+                {% endfor %}
+            </div>
+
+            {% if processed_images.0.accuracy %}
+            <h2 class="metric-heading">Recent Accuracies</h2>
+            <div class="metrics-grid">
+                {% for image in processed_images|slice:":5" %}
+                <div class="metric-box">{{ image.accuracy|floatformat:1 }}%</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    {% else %}
+        <p class="no-metrics">No performance metrics available yet. Upload some images to see metrics!</p>
+    {% endif %}
+</div>
+{% endblock %}

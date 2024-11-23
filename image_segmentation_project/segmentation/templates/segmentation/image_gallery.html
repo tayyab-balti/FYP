@@ -1,0 +1,55 @@
+{% extends 'segmentation/base.html' %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-6">
+    <h1 class="text-2xl font-bold mb-6">My Images</h1>
+
+    {% if images %}
+        <!-- Original Images -->
+        <div class="mb-8">
+            <h2 class="text-lg font-semibold mb-4">Original Images</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {% for image_pair in images %}
+                <div class="border rounded-lg p-4">
+                    <p class="text-sm text-gray-600 mb-2">Original Image {{ forloop.counter }}</p>
+                    <img src="{{ image_pair.original_image.url }}" alt="Original {{ forloop.counter }}" class="w-full h-auto mb-2">
+                    <div class="flex space-x-4">
+                        <a href="{% url 'view_image' image_pair.id 'original' %}" class="text-blue-600 hover:underline text-sm">View</a>
+                        <a href="{% url 'download_image' image_pair.id 'original' %}" class="text-blue-600 hover:underline text-sm">Download</a>
+                        <form method="post" action="{% url 'delete_image' image_pair.id %}" class="inline">
+                            {% csrf_token %}
+                            <button type="submit" class="text-red-600 hover:underline text-sm">Delete</button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Segmented Images -->
+        <div>
+            <h2 class="text-lg font-semibold mb-4">Segmented Images</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {% for image_pair in images %}
+                {% if image_pair.segmented_image %}
+                <div class="border rounded-lg p-4">
+                    <p class="text-sm text-gray-600 mb-2">Segmented Image {{ forloop.counter }}</p>
+                    <img src="{{ image_pair.segmented_image.url }}" alt="Segmented {{ forloop.counter }}" class="w-full h-auto mb-2">
+                    <div class="flex space-x-4">
+                        <a href="{% url 'view_image' image_pair.id 'segmented' %}" class="text-blue-600 hover:underline text-sm">View</a>
+                        <a href="{% url 'download_image' image_pair.id 'segmented' %}" class="text-blue-600 hover:underline text-sm">Download</a>
+                        <form method="post" action="{% url 'delete_image' image_pair.id %}" class="inline">
+                            {% csrf_token %}
+                            <button type="submit" class="text-red-600 hover:underline text-sm">Delete</button>
+                        </form>
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    {% else %}
+        <p>No images found. Please upload some images to get started.</p>
+    {% endif %}
+</div>
+{% endblock %}

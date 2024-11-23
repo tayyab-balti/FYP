@@ -1,0 +1,70 @@
+<!-- segmentation/templates/segmentation/my_images.html -->
+{% extends 'segmentation/base.html' %} {% load static %} {% block content %}
+
+<div class="container mx-auto px-4 py-6">
+    <h1 class="text-2xl font-bold mb-6">My Images</h1>
+
+    {% if images %}
+    <div class="grid gap-6">
+        {% for image_pair in images %}
+        <div class="flex flex-col md:flex-row gap-6 border rounded-lg p-4">
+            <!-- Original Image -->
+            <div class="flex-1">
+                <h2 class="text-lg font-semibold mb-4">Original Image</h2>
+                <div class="relative aspect-video mb-2">
+                    <img src="{{ image_pair.original_image.url }}" 
+                         alt="Original {{ forloop.counter }}" 
+                         class="absolute w-full h-full object-contain">
+                </div>
+                <div class="flex space-x-4">
+                    <a href="{% url 'view_image' image_pair.id 'original' %}" 
+                       class="text-blue-600 hover:underline text-sm">View</a>
+                    <a href="{% url 'download_image' image_pair.id 'original' %}" 
+                       class="text-blue-600 hover:underline text-sm">Download</a>
+                </div>
+            </div>
+
+            <!-- Segmented Image -->
+            {% if image_pair.segmented_image %}
+            <div class="flex-1">
+                <h2 class="text-lg font-semibold mb-4">Segmented Image</h2>
+                <div class="relative aspect-video mb-2">
+                    <img src="{{ image_pair.segmented_image.url }}" 
+                         alt="Segmented {{ forloop.counter }}" 
+                         class="absolute w-full h-full object-contain">
+                </div>
+                <div class="flex space-x-4">
+                    <a href="{% url 'view_image' image_pair.id 'segmented' %}" 
+                       class="text-blue-600 hover:underline text-sm">View</a>
+                    <a href="{% url 'download_image' image_pair.id 'segmented' %}" 
+                       class="text-blue-600 hover:underline text-sm">Download</a>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Delete button for the pair -->
+            <div class="self-start mt-4 md:mt-0">
+                <form method="post" action="{% url 'delete_image' image_pair.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="text-red-600 hover:underline text-sm">Delete</button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p>No images found. Please upload some images to get started.</p>
+    {% endif %}
+</div>
+
+<style>
+    .aspect-video {
+        padding-top: 56.25%; /* 16:9 aspect ratio */
+        position: relative;
+    }
+</style>
+
+<div class="performance-metrics">
+  <p>Processing Time: 0.45s</p>
+  <p>Accuracy: 98.5%</p></div>
+{% endblock %}

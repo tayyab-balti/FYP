@@ -1,0 +1,9 @@
+{% extends 'segmentation/base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2>Uploaded Image Result</h2>
+    <img src="{{ uploaded_image.image.url }}" alt="Uploaded Image" class="img-fluid">
+    <a href="{% url 'mysite' %}" class="btn btn-secondary mt-3">Upload Another Image</a>
+</div>
+{% endblock %}
