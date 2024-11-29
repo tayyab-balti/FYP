@@ -1,115 +1,192 @@
-main {
-    max-width: 100%; /* Or adjust this width to your preference */
-    margin: 0 auto;
-    padding: 20px; /* Add padding if needed */
-}
-
-header {
-    background-color: #2c3e50;
-    color: white;
-    padding: 1rem;
-}
-
-h1 {
+/* General Styles */
+body {
+    font-family: 'Arial', sans-serif;
     margin: 0;
-    padding-bottom: 0.5rem;
+    padding: 0;
+    background-color:  #2c3e50;
+}
+  
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color:  #2c3e50;
 }
 
-nav ul {
-    list-style-type: none;
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.image-upload {
+    background-color: #fff;
+    padding: 2rem;
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+}
+
+.upload-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 1.5rem;
+}
+
+.drop-zone {
+    text-align: center;
+    padding: 2rem;
+    border: 2px dashed #ccc;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.upload-btn {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    border-radius: 5px;
+}
+
+upload-btn:hover {
+    background-color: #3498db;
+}
+  
+  /* Header Styles */
+  header {
+    background-color: #4a90e2; /* Cool blue background */
+    color: #ffffff; /* White text color */
+    padding: 20px 0;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  header h1 {
+    font-size: 2rem;
+    margin: 0;
+    text-align: center;
+  }
+  
+  /* Navigation Styles */
+  nav ul {
+    list-style: none;
     padding: 0;
     margin: 0;
     display: flex;
-}
-
-nav ul li {
-    margin-right: 1rem;
-}
-
-nav ul li a {
-    color: white;
+    justify-content: center;
+    gap: 20px;
+  }
+  
+  nav ul li {
+    display: inline;
+  }
+  
+  nav ul li a {
     text-decoration: none;
-}
-
-nav ul li a:hover {
-    text-decoration: underline;
-}
-
-#upload-section {
-    max-width: 100%; /* Set a max width for the section */
-    margin: 0 auto;
-    padding: 20px;
-    text-align: left;
-}
-
-#upload-section h2 {
-    text-align: left;
-    margin-bottom: 20px;
-    font-weight: bold;
-}
-
-#upload-section button[type="submit"] {
-    background-color: #007bff;
-    color: white;
-    border: none;
+    font-size: 1rem;
+    color: #ffffff;
     padding: 10px 20px;
-    cursor: pointer;
-    margin-top: 10px;
-    display: block;
-}
+    background-color: #3b7dc4; /* Slightly darker blue for buttons */
+    border-radius: 5px;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  nav ul li a:hover {
+    background-color: #336aad; /* Even darker blue on hover */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    header h1 {
+      font-size: 1.5rem;
+    }
+  
+    nav ul {
+      flex-direction: column;
+      gap: 10px;
+    }
+  
+    nav ul li a {
+      font-size: 0.9rem;
+    }
+  }
 
 input[type="file"] {
     margin-bottom: 10px;
 }
 
-button {
-    background-color: #2980b9;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    cursor: pointer;
-    border-radius: 5px;
+/* ------------------------------------------------------------- */
+/* Center the container within the viewport */
+.center-container {
+    display: flex; /* Enables flexbox */
+    justify-content: center; /* Horizontally centers the content */
+    align-items: center; /* Vertically centers the content */
+    height: 20vh; /* Full viewport height */
+    text-align: center; /* Center text alignment */
+    margin: 0; /* Remove default margin */
+    background-color: #4d92ec; /* Optional: Background color */
 }
 
-button:hover {
-    background-color: #3498db;
+/* Style the heading inside the container */
+.center-container h1 {
+    font-size: 2rem; /* Adjust font size */
+    font-weight: bold; /* Make text bold */
+    color: #333; /* Adjust text color */
 }
 
 #example-images {
-    padding: 20px;
-    background-color: #f9f9f9;
-}
-
-/* Style for the image comparison container */
-.image-comparison {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-}
-
-/* Style for each image container */
-.image-comparison > div {
-    flex: 1 1 45%; /* Adjust the percentage to control the width of each image container */
-    background-color: #fff;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    text-align: center;
-}
-
-/* Style for the image */
-.image-comparison img {
     max-width: 100%;
-    height: auto;
-    border-radius: 5px;
+    margin: 0 auto;
+    padding: 20px;
 }
 
-/* Style for the headings */
-.image-comparison h4 {
-    margin-bottom: 10px;
-    font-size: 1.2em;
-    color: #333;
+/* Ensure rows are displayed as flex containers */
+.row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+/* Columns styling */
+.col {
+    flex: 1;
+    text-align: center;
+    padding: 10px;
+}
+
+/* Style the image container */
+.image-container {
+    display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+/* Fix image sizes and make them responsive */
+.image-container img {
+    max-width: 100%; /* Ensures images scale down as needed */
+    max-height: 300px; /* Restrict maximum height */
+    width: auto; /* Maintain aspect ratio */
+    height: auto; /* Maintain aspect ratio */
+    border: 1px solid #ddd; /* Optional: Add border for aesthetics */
+    border-radius: 8px; /* Optional: Add rounded corners */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Optional: Add shadow */
+}
+
+/* Ensure small screens are handled */
+@media (max-width: 768px) {
+    .row {
+        flex-direction: column;
+    }
+    .col {
+        width: 100%;
+        margin-bottom: 20px;
+    }
 }
 
 .metrics-summary {
@@ -144,3 +221,4 @@ button:hover {
     font-weight: bold;
     color: #333;
 }
+

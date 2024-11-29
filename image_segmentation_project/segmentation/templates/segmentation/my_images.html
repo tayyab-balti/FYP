@@ -1,60 +1,82 @@
-<!-- segmentation/templates/segmentation/my_images.html -->
-{% extends 'segmentation/base.html' %} {% load static %} {% block content %}
+{% extends 'segmentation/base.html' %}
+{% load static %}
 
+{% block content %}
 <div class="container mx-auto px-4 py-6">
     <h1 class="text-2xl font-bold mb-6">My Images</h1>
-    <br>
-    
+
     {% if images %}
-    <div class="grid gap-6">
-        {% for image_pair in images %}
-        <div class="flex flex-col md:flex-row gap-6 border rounded-lg p-4">
-            <!-- Original Image -->
-            <div class="flex-1">
-                <h2 class="text-lg font-semibold mb-4">Original Image</h2>
-                <div class="relative aspect-video mb-2">
-                    <img src="{{ image_pair.original_image.url }}" 
-                         alt="Original {{ forloop.counter }}" 
-                         class="absolute w-full h-full object-contain">
-                </div>
-                <div class="flex space-x-4">
-                    <a href="{% url 'view_image' image_pair.id 'original' %}" 
-                       class="text-blue-600 hover:underline text-sm">View</a>
-                    <a href="{% url 'download_image' image_pair.id 'original' %}" 
-                       class="text-blue-600 hover:underline text-sm">Download</a>
-                </div>
-            </div>
+        <div class="space-y-6">
+            {% for image_pair in images %}
+                <div class="grid md:grid-cols-2 gap-6 border rounded-lg p-4 bg-white shadow-sm">
+                    <!-- Original Image Column -->
+                    <div class="flex flex-col">
+                        <h2 class="text-lg font-semibold mb-4">Original Image</h2>
+                        <div class="flex-grow relative aspect-video mb-4">
+                            <img src="{{ image_pair.original_image.url }}" 
+                                 alt="Original {{ forloop.counter }}" 
+                                 class="absolute w-full h-full object-contain">
+                        </div>
+                        <div class="flex justify-between">
+                            <div class="space-x-4">
+                                <a href="{% url 'view_image' image_pair.id 'original' %}" 
+                                   class="text-blue-600 hover:underline text-sm">View</a>
+                                <a href="{% url 'download_image' image_pair.id 'original' %}" 
+                                   class="text-blue-600 hover:underline text-sm">Download</a>
+                            </div>
+                        </div>
+                    </div>
 
-            <!-- Segmented Image -->
-            {% if image_pair.segmented_image %}
-            <div class="flex-1">
-                <h2 class="text-lg font-semibold mb-4">Segmented Image</h2>
-                <div class="relative aspect-video mb-2">
-                    <img src="{{ image_pair.segmented_image.url }}" 
-                         alt="Segmented {{ forloop.counter }}" 
-                         class="absolute w-full h-full object-contain">
-                </div>
-                <div class="flex space-x-4">
-                    <a href="{% url 'view_image' image_pair.id 'segmented' %}" 
-                       class="text-blue-600 hover:underline text-sm">View</a>
-                    <a href="{% url 'download_image' image_pair.id 'segmented' %}" 
-                       class="text-blue-600 hover:underline text-sm">Download</a>
-                </div>
-            </div>
-            {% endif %}
+                    <!-- Segmented Image Column -->
+                    <div class="flex flex-col">
+                        <h2 class="text-lg font-semibold mb-4">Segmented Image</h2>
+                        {% if image_pair.segmented_image %}
+                            <div class="flex-grow relative aspect-video mb-4">
+                                <img src="{{ image_pair.segmented_image.url }}" 
+                                     alt="Segmented {{ forloop.counter }}" 
+                                     class="absolute w-full h-full object-contain">
+                            </div>
+                            <div class="space-y-2 mb-4">
+                                <p class="text-sm text-gray-600">
+                                    Accuracy: <span class="font-medium">{{ image_pair.accuracy|default:"N/A" }}%</span>
+                                </p>
+                                <p class="text-sm text-gray-600">
+                                    Processing Time: <span class="font-medium">{{ image_pair.processing_time|default:"N/A" }} seconds</span>
+                                </p>
+                            </div>
+                            <div class="flex justify-between">
+                                <div class="space-x-4">
+                                    <a href="{% url 'view_image' image_pair.id 'segmented' %}" 
+                                       class="text-blue-600 hover:underline text-sm">View</a>
+                                    <a href="{% url 'download_image' image_pair.id 'segmented' %}" 
+                                       class="text-blue-600 hover:underline text-sm">Download</a>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="flex-grow flex items-center justify-center border-2 border-dashed border-gray-300 rounded">
+                                <p class="text-sm text-gray-500 text-center">
+                                    Segmentation not yet available
+                                </p>
+                            </div>
+                        {% endif %}
+                    </div>
 
-            <!-- Delete button for the pair -->
-            <div class="self-start mt-4 md:mt-0">
-                <form method="post" action="{% url 'delete_image' image_pair.id %}">
-                    {% csrf_token %}
-                    <button type="submit" class="text-red-600 hover:underline text-sm">Delete</button>
-                </form>
-            </div>
+                    <!-- Delete Button (Positioned at the bottom right) -->
+                    <div class="md:col-span-2 flex justify-end">
+                        <form method="post" action="{% url 'delete_image' image_pair.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="text-red-600 hover:text-red-800 text-sm">
+                                Delete Image Pair
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
         </div>
-        {% endfor %}
-    </div>
     {% else %}
-    <p>No images found. Please upload some images to get started.</p>
+        <div class="text-center py-10 bg-gray-50 rounded-lg">
+            <p class="text-gray-600">No images found. Please upload some images to get started.</p>
+        </div>
     {% endif %}
 </div>
 

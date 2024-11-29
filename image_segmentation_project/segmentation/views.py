@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from .utils import call_huggingface_segmentation
 from .forms import ImageUploadForm
 from django.db import models
 from django.db.models import Avg 
@@ -6,10 +7,59 @@ from .models import ImagePair
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, FileResponse
 from django.conf import settings
+from django.core.files.storage import FileSystemStorage
 import os
 
+# @login_required(login_url='login')
+# def upload_image (request):
+#     if request.method == 'POST':
+#         form = ImageUploadForm(request.POST, request.FILES)
+#         if form.is_valid():
+#             # Save the uploaded image to the media directory
+#             uploaded_file = request.FILES['image']
+#             fs = FileSystemStorage()
+#             file_path = fs.save(uploaded_file.name, uploaded_file)
+#             full_path = fs.path(file_path)
+
+#             try:
+#                 # Call the Hugging Face API for segmentation
+#                 api_response = call_huggingface_segmentation(full_path)
+#                 print("API Response:", api_response)  # Debugging
+#                 if "data" in api_response and api_response['data']:
+#                     segmented_image_data = api_response['data'][0]['segmentation']  # Extract segmentation info
+                
+#                     # Save the segmented image to media/segmented_images
+#                     segmented_image_path = os.path.join(settings.MEDIA_ROOT, 'segmented_images', uploaded_file.name)
+#                     with open(segmented_image_path, 'wb') as f:
+#                         f.write(segmented_image_data)  # Save the binary segmented image
+#                 else:
+#                     raise Exception("Segmentation output is missing in the API response")
+                
+#                 # Save the image pair in the database
+#                 image_pair = ImagePair(
+#                     user=request.user,
+#                     original_image=uploaded_file,
+#                     segmented_image=os.path.relpath(segmented_image_path, settings.MEDIA_ROOT),  # Relative path
+#                     processing_time=api_response['data'][0].get('processing_time', 0.5),  # Example metric
+#                     accuracy=api_response['data'][0].get('accuracy', 99.0)  # Example metric
+#                 )
+#                 image_pair.save()
+
+#                 # Redirect to the My Images page
+#                 return redirect('my_images')
+
+#             except Exception as e:
+#                 print("API Call Failed:", str(e))  # Debugging
+#                 return render(request, 'segmentation/error.html', {"error": str(e)})
+
+#     else:
+#         form = ImageUploadForm()
+#     return render(request, 'segmentation/upload_image.html', {'form': form})
+
+
+# --------------------------------------------------
 @login_required(login_url='login')
-def UploadButton(request):
+def upload_image(request):
     if request.method == 'POST':
         form = ImageUploadForm(request.POST, request.FILES)
         if form.is_valid():
@@ -19,28 +69,21 @@ def UploadButton(request):
                 original_image=request.FILES['image']
             )
             
-            # Here you would actually process the image and get real metrics
-            # For demonstration, we'll use random values
-            import random
-            import time
+            # Save the ImagePair instance
+            image_pair.save()
             
-            start_time = time.time()
-            # Your image segmentation process would go here
-            time.sleep(0.5)  # Simulate processing time
-            processing_time = time.time() - start_time
-            
-            # Simulate accuracy (replace with actual accuracy calculation)
-            accuracy = random.uniform(95.0, 99.9)
+            # Make prediction using the segmentation model
+            results, processing_time = call_huggingface_segmentation(image_pair)
             
             # Save metrics
             image_pair.processing_time = processing_time
-            image_pair.accuracy = accuracy
             image_pair.save()
             
             return redirect('my_images')
     else:
         form = ImageUploadForm()
-    return render(request, 'segmentation/upload_button.html', {'form': form})
+    return render(request, 'segmentation/upload_image.html', {'form': form})
+# --------------------------------------------------
 
 @login_required(login_url='login')
 def MyImages(request):
