@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from .forms import ImageUploadForm
 from django.db import models
 from django.db.models import Avg 
-from .models import UploadedImage, PerformanceData, ImagePair
+from .models import ImagePair
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, FileResponse
 from django.conf import settings
@@ -42,11 +42,6 @@ def UploadButton(request):
         form = ImageUploadForm()
     return render(request, 'segmentation/upload_button.html', {'form': form})
 
-# -------------------
-def result_view(request, image_id): 
-    uploaded_image = UploadedImage.objects.get(id=image_id)
-    return render(request, 'segmentation/result.html', {'uploaded_image': uploaded_image})
-
 @login_required(login_url='login')
 def MyImages(request):
     images = ImagePair.objects.filter(user=request.user)
@@ -77,7 +72,7 @@ def delete_image(request, image_id):
     if request.method == 'POST':
         image_pair = get_object_or_404(ImagePair, id=image_id, user=request.user)
         image_pair.delete()
-    return redirect('segmentation/image_gallery')
+    return redirect('image_gallery')
 
 @login_required(login_url='login')
 def performance_metrics(request):

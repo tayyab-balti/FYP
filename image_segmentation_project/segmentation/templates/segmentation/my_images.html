@@ -3,7 +3,8 @@
 
 <div class="container mx-auto px-4 py-6">
     <h1 class="text-2xl font-bold mb-6">My Images</h1>
-
+    <br>
+    
     {% if images %}
     <div class="grid gap-6">
         {% for image_pair in images %}
@@ -63,8 +64,4 @@
         position: relative;
     }
 </style>
-
-<div class="performance-metrics">
-  <p>Processing Time: 0.45s</p>
-  <p>Accuracy: 98.5%</p></div>
 {% endblock %}
