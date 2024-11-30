@@ -1,0 +1,89 @@
+
+{% extends 'segmentation/base.html' %} {% load static %} {% block content %}
+
+<div class="container">
+  <div class="center-container">
+    <h1>Welcome to the Image Segmentation Application!</h1>
+  </div>
+
+  <section id="example-images">
+    <h2>Example Images:</h2>
+    <br>
+    <div class="row">
+      <!-- First Pair -->
+      <div class="col">
+        <h3>Original Image</h3>
+        <div class="image-container">
+          <img src="{% static 'segmentation/images/original_images/zidane.jpg' %}" alt="Input Image 1">
+        </div>
+      </div>
+      <div class="col">
+        <h3>Segmented Image</h3>
+        <div class="image-container">
+          <img src="{% static 'segmentation/images/segmented_images/zidane_seg.webp' %}" alt="Segmented Image 1">
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <!-- Second Pair -->
+      <div class="col">
+        <h3>Original Image</h3>
+        <div class="image-container">
+          <img src="{% static 'segmentation/images/original_images/red_car.jpg' %}" alt="Input Image 2">
+        </div>
+      </div>
+      <div class="col">
+        <h3>Segmented Image</h3>
+        <div class="image-container">
+          <img src="{% static 'segmentation/images/segmented_images/red_car_seg.webp' %}" alt="Segmented Image 2">
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <!-- Third Pair -->
+      <div class="col">
+        <h3>Original Image</h3>
+        <div class="image-container">
+          <img src="{% static 'segmentation/images/original_images/small-vehicles1.jpeg' %}" alt="Input Image 3">
+        </div>
+      </div>
+      <div class="col">
+        <h3>Segmented Image</h3>
+        <div class="image-container">
+          <img src="{% static 'segmentation/images/segmented_images/small-vehicles1_seg.webp' %}" alt="Segmented Image 3">
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <!-- Fourth Pair -->
+      <div class="col">
+        <h3>Original Image</h3>
+        <div class="image-container">
+          <img src="{% static 'segmentation/images/original_images/black_car.jpg' %}" alt="Input Image 4">
+        </div>
+      </div>
+      <div class="col">
+        <h3>Segmented Image</h3>
+        <div class="image-container">
+          <img src="{% static 'segmentation/images/segmented_images/black_car_seg.webp' %}" alt="Segmented Image 4">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <header>
+    <h1>Ultralytics YOLOv8 Segmentation Demo</h1>
+  </header>
+
+  <section class="image-upload">
+    <h2>If you want to try, click below!</h2>
+    <form action="{% url 'check_demo' %}" method="post">
+      {% csrf_token %}
+      <button type="submit" class="upload-btn">Check Demo</button>
+    </form>
+  </section>
+</div>
+{% endblock %}

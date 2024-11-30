@@ -1,0 +1,10 @@
+{% extends 'segmentation/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="flex justify-center items-center h-screen">
+    <div class="max-w-5xl w-full">
+        <img src="{{ image.url }}" alt="Viewed Image" class="w-full h-auto object-contain">
+    </div>
+</div>
+{% endblock %}

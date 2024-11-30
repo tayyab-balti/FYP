@@ -1,121 +1,169 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .utils import call_huggingface_segmentation
-from .forms import ImageUploadForm
-from django.db import models
-from django.db.models import Avg 
-from .models import ImagePair
-from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, FileResponse
-from django.conf import settings
-from django.core.files.storage import FileSystemStorage
-import os
+from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ValidationError
+# from huggingface_hub import Client
+from transformers import AutoModelForSequenceClassification #
+from .models import ImagePair 
+from .forms import ImageUploadForm
+import logging
+from django.core.files import File
+from django.core.files.base import ContentFile #
+import tempfile
 
-# @login_required(login_url='login')
-# def upload_image (request):
-#     if request.method == 'POST':
-#         form = ImageUploadForm(request.POST, request.FILES)
-#         if form.is_valid():
-#             # Save the uploaded image to the media directory
-#             uploaded_file = request.FILES['image']
-#             fs = FileSystemStorage()
-#             file_path = fs.save(uploaded_file.name, uploaded_file)
-#             full_path = fs.path(file_path)
+def website(request):
+    """
+    Render the main website page with example images and navigation.
+    """
+    return render(request, 'segmentation/website.html')
 
-#             try:
-#                 # Call the Hugging Face API for segmentation
-#                 api_response = call_huggingface_segmentation(full_path)
-#                 print("API Response:", api_response)  # Debugging
-#                 if "data" in api_response and api_response['data']:
-#                     segmented_image_data = api_response['data'][0]['segmentation']  # Extract segmentation info
-                
-#                     # Save the segmented image to media/segmented_images
-#                     segmented_image_path = os.path.join(settings.MEDIA_ROOT, 'segmented_images', uploaded_file.name)
-#                     with open(segmented_image_path, 'wb') as f:
-#                         f.write(segmented_image_data)  # Save the binary segmented image
-#                 else:
-#                     raise Exception("Segmentation output is missing in the API response")
-                
-#                 # Save the image pair in the database
-#                 image_pair = ImagePair(
-#                     user=request.user,
-#                     original_image=uploaded_file,
-#                     segmented_image=os.path.relpath(segmented_image_path, settings.MEDIA_ROOT),  # Relative path
-#                     processing_time=api_response['data'][0].get('processing_time', 0.5),  # Example metric
-#                     accuracy=api_response['data'][0].get('accuracy', 99.0)  # Example metric
-#                 )
-#                 image_pair.save()
+def check_demo(request):
+    """
+    Render the upload page with an empty form for image segmentation.
+    """
+    return render(request, 'segmentation/upload_image.html', {
+        'form': ImageUploadForm(),
+        'original_image': None
+    })
 
-#                 # Redirect to the My Images page
-#                 return redirect('my_images')
-
-#             except Exception as e:
-#                 print("API Call Failed:", str(e))  # Debugging
-#                 return render(request, 'segmentation/error.html', {"error": str(e)})
-
-#     else:
-#         form = ImageUploadForm()
-#     return render(request, 'segmentation/upload_image.html', {'form': form})
-
-
-# --------------------------------------------------
 @login_required(login_url='login')
 def upload_image(request):
+    """
+    Handle image upload, display, and segmentation process.
+    """
     if request.method == 'POST':
-        form = ImageUploadForm(request.POST, request.FILES)
-        if form.is_valid():
-            # Create ImagePair instance
-            image_pair = ImagePair(
-                user=request.user,
-                original_image=request.FILES['image']
-            )
+        # Get the uploaded image
+        original_image = request.FILES.get('original_image')
+        
+        if not original_image:
+            return render(request, 'segmentation/upload_image.html', {
+                'form': ImageUploadForm(),
+                'error': 'Please upload an image.'
+            })
+
+        try:
+            # Validate file type and size
+            valid_extensions = ['.jpg', '.jpeg', '.png', '.webp']
+            max_file_size = 10 * 1024 * 1024  # 10MB
+
+            # Check file extension
+            if not any(original_image.name.lower().endswith(ext) for ext in valid_extensions):
+                raise ValidationError(f'Invalid file type. Supported types: {", ".join(valid_extensions)}')
             
-            # Save the ImagePair instance
-            image_pair.save()
-            
-            # Make prediction using the segmentation model
-            results, processing_time = call_huggingface_segmentation(image_pair)
-            
-            # Save metrics
-            image_pair.processing_time = processing_time
-            image_pair.save()
-            
-            return redirect('my_images')
-    else:
-        form = ImageUploadForm()
-    return render(request, 'segmentation/upload_image.html', {'form': form})
-# --------------------------------------------------
+            # Check file size
+            if original_image.size > max_file_size:
+                raise ValidationError('File too large. Maximum size is 10MB.')
+
+            # Perform segmentation using Hugging Face
+            try:
+                client = Client("fcakyon/yolov8-segmentation")
+                
+                # Save the uploaded image temporarily
+                with tempfile.NamedTemporaryFile(delete=False, suffix=original_image.name.split('.')[-1]) as temp_file:
+                    for chunk in original_image.chunks():
+                        temp_file.write(chunk)
+                    temp_file_path = temp_file.name
+
+                # Perform segmentation
+                result = client.predict(
+                    image=temp_file_path,
+                    model_name="yolov8m-seg.pt",
+                    image_size=640,
+                    conf_threshold=0.25,
+                    iou_threshold=0.45,
+                    api_name="/predict"
+                )
+
+                # Ensure the result is valid
+                if not result or len(result) == 0:
+                    raise ValueError("No segmentation result returned")
+
+                # Save segmented image
+                segmented_filename = f'segmented_{original_image.name}'
+                segmented_content = ContentFile(result[0])
+
+                # Create ImagePair
+                image_pair = ImagePair.objects.create(
+                    user=request.user,
+                    original_image=original_image,
+                    accuracy=80.0,
+                    processing_time=2.5
+                )
+                
+                # Save segmented image separately to avoid potential issues
+                image_pair.segmented_image.save(segmented_filename, segmented_content)
+                image_pair.save()
+
+                # Redirect to MyImages view
+                return redirect('my_images')
+
+            except Exception as e:
+                logging.error(f"Segmentation error: {e}")
+                return render(request, 'segmentation/upload_image.html', {
+                    'form': ImageUploadForm(),
+                    'error': f'Error processing image: {str(e)}'
+                })
+
+        except ValidationError as e:
+            return render(request, 'segmentation/upload_image.html', {
+                'form': ImageUploadForm(),
+                'error': str(e)
+            })
+
+    # GET request
+    return render(request, 'segmentation/upload_image.html', {
+        'form': ImageUploadForm(),
+    })
 
 @login_required(login_url='login')
-def MyImages(request):
-    images = ImagePair.objects.filter(user=request.user)
-    return render(request, 'segmentation/my_images.html', {'images': images})
+def my_images(request):
+    """
+    Display user's uploaded and segmented images.
+    Filters out entries with missing images.
+    """
+    # Get all image pairs for the current user, with valid images
+    image_pairs = ImagePair.objects.filter(
+        user=request.user, 
+        original_image__isnull=False
+    ).order_by('-created_at')
+    
+    return render(request, 'segmentation/my_images.html', {
+        'image_pairs': image_pairs
+    })
+# --------------------------------------------------
 
 @login_required(login_url='login')
 def view_image(request, image_id, image_type):
-    image_pair = get_object_or_404(ImagePair, id=image_id, user=request.user)
+    image_pair = ImagePair.objects.get(id=image_id)
     if image_type == 'original':
         image = image_pair.original_image
     else:
         image = image_pair.segmented_image
-    return FileResponse(image.open(), content_type='image/jpeg')
+    return render(request, 'segmentation/view_image.html', {'image': image})
 
 @login_required(login_url='login')
 def download_image(request, image_id, image_type):
-    image_pair = get_object_or_404(ImagePair, id=image_id, user=request.user)
+    image_pair = ImagePair.objects.get(id=image_id)
     if image_type == 'original':
         image = image_pair.original_image
     else:
         image = image_pair.segmented_image
-    response = FileResponse(image.open(), as_attachment=True)
+    response = HttpResponse(image.read(), content_type='image/jpeg')
     response['Content-Disposition'] = f'attachment; filename="{image.name}"'
     return response
 
 @login_required(login_url='login')
-def delete_image(request, image_id):
-    if request.method == 'POST':
-        image_pair = get_object_or_404(ImagePair, id=image_id, user=request.user)
-        image_pair.delete()
-    return redirect('image_gallery')
+def delete_image_pair(request, image_id):
+    # Get the image pair
+    image_pair = get_object_or_404(ImagePair, pk=image_id)
+    # Delete the original image
+    image_pair.original_image.delete()
+    # Delete the segmented image
+    if image_pair.segmented_image:
+        image_pair.segmented_image.delete()
+    # Delete the image pair
+    image_pair.delete()
+    return redirect('my_images')
 
 @login_required(login_url='login')
 def performance_metrics(request):

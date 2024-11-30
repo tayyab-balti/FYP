@@ -42,18 +42,18 @@ body {
 }
 
 .upload-btn {
-    background-color: #007bff;
-    color: #fff;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 1rem;
-    border-radius: 5px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s ease; /* Added transition for smooth hover effect */
 }
 
-upload-btn:hover {
-    background-color: #3498db;
+.upload-btn:hover {
+  background-color: #3498db;
 }
   
   /* Header Styles */
