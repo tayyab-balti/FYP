@@ -78,12 +78,17 @@
     <h1>Ultralytics YOLOv8 Segmentation Demo</h1>
   </header>
 
-  <section class="image-upload">
+  {% comment %} <section class="image-upload">
     <h2>If you want to try, click below!</h2>
     <form action="{% url 'check_demo' %}" method="post">
       {% csrf_token %}
       <button type="submit" class="upload-btn">Check Demo</button>
     </form>
+  </section> {% endcomment %}
+
+  <section class="image-upload">
+    <h2>If you want to try, click below!</h2>
+    <a href="{% url 'upload_image' %}" class="upload-btn">Upload Image</a>
   </section>
 </div>
 {% endblock %}

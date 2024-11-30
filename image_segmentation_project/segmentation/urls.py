@@ -4,7 +4,7 @@ from . import views
 urlpatterns = [
     path('my-site/', views.website, name="mysite"),
     path('upload_image/', views.upload_image, name='upload_image'),    #
-    path('check_demo/', views.check_demo, name='check_demo'),
+    # path('check_demo/', views.check_demo, name='check_demo'),
     # path('segmentation/', views.upload_and_segment, name='upload_and_segment'),
     path('my-images/', views.my_images, name='my_images'),
     path('gallery/', views.image_gallery, name='image_gallery'),   #

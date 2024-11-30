@@ -1,6 +1,6 @@
 {% extends 'segmentation/base.html' %} {% load static %} {% block content %}
 
-<div class="container">
+{% comment %} <div class="container">
   <header>
     <h1>Ultralytics YOLOv8 Segmentation Demo</h1>
   </header>
@@ -26,5 +26,42 @@
       </div>
     </div>
   </div>
+</div>
+{% endblock %} {% endcomment %}
+
+<div class="container">
+  <header>
+    <h1>Ultralytics YOLOv8 Segmentation Demo</h1>
+  </header>
+  <section class="image-upload">
+    <h2>Upload Image</h2>
+    <form action="{% url 'upload_image' %}" method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit" class="upload-btn">Upload Image</button>
+      <button type="reset" class="clear-btn">Clear Image</button>
+    </form>
+  </section>
+
+  <section class="image-container">
+    <div class="row">
+      <div class="col">
+        <h3>Original Image</h3>
+        <div class="image-container">
+          {% if original_image %}
+            <img src="{{ original_image.url }}" alt="Original Image">
+          {% endif %}
+        </div>
+      </div>
+      <div class="col">
+        <h3>Segmented Image</h3>
+        <div class="image-container">
+          {% if segmented_image %}
+            <img src="{{ segmented_image.url }}" alt="Segmented Image">
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </section>
 </div>
 {% endblock %}

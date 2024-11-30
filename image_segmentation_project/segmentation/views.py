@@ -18,46 +18,131 @@ def website(request):
     """
     return render(request, 'segmentation/website.html')
 
-def check_demo(request):
-    """
-    Render the upload page with an empty form for image segmentation.
-    """
-    return render(request, 'segmentation/upload_image.html', {
-        'form': ImageUploadForm(),
-        'original_image': None
-    })
+# @login_required(login_url='login')
+# def upload_image(request):
+#     """
+#     Handle image upload, display, and segmentation process.
+#     """
+#     if request.method == 'POST':
+#         # Get the uploaded image
+#         original_image = request.FILES.get('original_image')
+        
+#         if not original_image:
+#             return render(request, 'segmentation/upload_image.html', {
+#                 'form': ImageUploadForm(),
+#                 'error': 'Please upload an image.'
+#             })
+
+#         try:
+#             # Validate file type and size
+#             valid_extensions = ['.jpg', '.jpeg', '.png', '.webp']
+#             max_file_size = 10 * 1024 * 1024  # 10MB
+
+#             # Check file extension
+#             if not any(original_image.name.lower().endswith(ext) for ext in valid_extensions):
+#                 raise ValidationError(f'Invalid file type. Supported types: {", ".join(valid_extensions)}')
+            
+#             # Check file size
+#             if original_image.size > max_file_size:
+#                 raise ValidationError('File too large. Maximum size is 10MB.')
+
+#             # Perform segmentation using Hugging Face
+#             try:
+#                 model = AutoModelForSequenceClassification.from_pretrained("fcakyon/yolov8-segmentation")
+                
+#                 # Save the uploaded image temporarily
+#                 with tempfile.NamedTemporaryFile(delete=False, suffix=original_image.name.split('.')[-1]) as temp_file:
+#                     for chunk in original_image.chunks():
+#                         temp_file.write(chunk)
+#                     temp_file_path = temp_file.name
+
+#                 # Perform segmentation
+#                 result = model.predict(
+#                     image=temp_file_path,
+#                     model_name="yolov8m-seg.pt",
+#                     image_size=640,
+#                     conf_threshold=0.25,
+#                     iou_threshold=0.45,
+#                     api_name="/predict"
+#                 )
+
+#                 # Ensure the result is valid
+#                 if not result or len(result) == 0:
+#                     raise ValueError("No segmentation result returned")
+
+#                 # Save segmented image
+#                 segmented_filename = f'segmented_{original_image.name}'
+#                 segmented_content = ContentFile(result[0])
+
+#                 # Create ImagePair
+#                 image_pair = ImagePair.objects.create(
+#                     user=request.user,
+#                     original_image=original_image,
+#                     accuracy=80.0,
+#                     processing_time=2.5
+#                 )
+                
+#                 # Save segmented image separately to avoid potential issues
+#                 image_pair.segmented_image.save(segmented_filename, segmented_content)
+#                 image_pair.save()
+
+#                 # Redirect to MyImages view
+#                 return redirect('my_images')
+
+#             except Exception as e:
+#                 logging.error(f"Segmentation error: {e}")
+#                 return render(request, 'segmentation/upload_image.html', {
+#                     'form': ImageUploadForm(),
+#                     'error': f'Error processing image: {str(e)}'
+#                 })
+
+#         except ValidationError as e:
+#             return render(request, 'segmentation/upload_image.html', {
+#                 'form': ImageUploadForm(),
+#                 'error': str(e)
+#             })
+
+#     # GET request
+#     return render(request, 'segmentation/upload_image.html', {
+#         'form': ImageUploadForm(),
+#     })
+
+# @login_required(login_url='login')
+# def my_images(request):
+#     """
+#     Display user's uploaded and segmented images.
+#     Filters out entries with missing images.
+#     """
+#     # Get all image pairs for the current user, with valid images
+#     image_pairs = ImagePair.objects.filter(
+#         user=request.user, 
+#         original_image__isnull=False
+#     ).order_by('-created_at')
+    
+#     return render(request, 'segmentation/my_images.html', {
+#         'image_pairs': image_pairs
+#     })
+
+# --------------------------------------------------
 
 @login_required(login_url='login')
 def upload_image(request):
-    """
-    Handle image upload, display, and segmentation process.
-    """
     if request.method == 'POST':
-        # Get the uploaded image
-        original_image = request.FILES.get('original_image')
-        
-        if not original_image:
-            return render(request, 'segmentation/upload_image.html', {
-                'form': ImageUploadForm(),
-                'error': 'Please upload an image.'
-            })
-
-        try:
-            # Validate file type and size
+        form = ImageUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            original_image = request.FILES['original_image']
             valid_extensions = ['.jpg', '.jpeg', '.png', '.webp']
             max_file_size = 10 * 1024 * 1024  # 10MB
 
-            # Check file extension
             if not any(original_image.name.lower().endswith(ext) for ext in valid_extensions):
                 raise ValidationError(f'Invalid file type. Supported types: {", ".join(valid_extensions)}')
             
-            # Check file size
             if original_image.size > max_file_size:
                 raise ValidationError('File too large. Maximum size is 10MB.')
 
-            # Perform segmentation using Hugging Face
             try:
-                model = AutoModelForSequenceClassification.from_pretrained("fcakyon/yolov8-segmentation")
+                # Perform segmentation using Hugging Face
+                model = AutoModelForSequenceClassification.from_pretrained("ultralytics/yolov8")
                 
                 # Save the uploaded image temporarily
                 with tempfile.NamedTemporaryFile(delete=False, suffix=original_image.name.split('.')[-1]) as temp_file:
@@ -95,34 +180,25 @@ def upload_image(request):
                 image_pair.segmented_image.save(segmented_filename, segmented_content)
                 image_pair.save()
 
-                # Redirect to MyImages view
-                return redirect('my_images')
-
+                return redirect('upload_image')
             except Exception as e:
                 logging.error(f"Segmentation error: {e}")
                 return render(request, 'segmentation/upload_image.html', {
-                    'form': ImageUploadForm(),
+                    'form': form,
                     'error': f'Error processing image: {str(e)}'
                 })
-
-        except ValidationError as e:
+        else:
             return render(request, 'segmentation/upload_image.html', {
-                'form': ImageUploadForm(),
-                'error': str(e)
+                'form': form,
             })
-
-    # GET request
-    return render(request, 'segmentation/upload_image.html', {
-        'form': ImageUploadForm(),
-    })
+    else:
+        form = ImageUploadForm()
+        return render(request, 'segmentation/upload_image.html', {
+            'form': form,
+        })
 
 @login_required(login_url='login')
 def my_images(request):
-    """
-    Display user's uploaded and segmented images.
-    Filters out entries with missing images.
-    """
-    # Get all image pairs for the current user, with valid images
     image_pairs = ImagePair.objects.filter(
         user=request.user, 
         original_image__isnull=False
@@ -131,7 +207,7 @@ def my_images(request):
     return render(request, 'segmentation/my_images.html', {
         'image_pairs': image_pairs
     })
-# --------------------------------------------------
+# --------------------------------------------------------------------
 
 @login_required(login_url='login')
 def view_image(request, image_id, image_type):
