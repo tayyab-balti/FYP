@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, FileResponse
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
+from django.db.models import Avg 
 # from huggingface_hub import Client
 from transformers import AutoModelForSequenceClassification #
 from .models import ImagePair 
@@ -56,7 +57,7 @@ def upload_image(request):
 
             # Perform segmentation using Hugging Face
             try:
-                client = Client("fcakyon/yolov8-segmentation")
+                model = AutoModelForSequenceClassification.from_pretrained("fcakyon/yolov8-segmentation")
                 
                 # Save the uploaded image temporarily
                 with tempfile.NamedTemporaryFile(delete=False, suffix=original_image.name.split('.')[-1]) as temp_file:
@@ -65,7 +66,7 @@ def upload_image(request):
                     temp_file_path = temp_file.name
 
                 # Perform segmentation
-                result = client.predict(
+                result = model.predict(
                     image=temp_file_path,
                     model_name="yolov8m-seg.pt",
                     image_size=640,
